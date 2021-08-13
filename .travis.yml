@@ -4,10 +4,10 @@ services:
   - docker
 
 before_install:
-  - docker build -t chervinvananaz/react-test . -f ./client/Dockerfile.dev
+  - docker build -t react-test -f ./client/Dockerfile.dev .
 
 script:
-  - docker run -e CI=true chervinvananaz/react-test yarn test
+  - docker run -e CI=true react-test yarn test
 
 after_success:
   - docker build -t chervinvananaz/multi-client ./client
