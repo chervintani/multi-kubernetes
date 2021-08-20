@@ -1,48 +1,63 @@
-version: '3'
-services: 
-  postgres:
-    image: 'postgres:latest'
-    environment: 
-      POSTGRES_PASSWORD: 'password'
-  redis:
-    image: 'redis:latest'
-  nginx:
-    restart: always
-    build:
-      dockerfile: Dockerfile.dev
-      context: ./nginx
-    ports:
-      - '8080:80'
-  api:
-    build:
-      dockerfile: Dockerfile.dev
-      context: ./server
-    volumes:
-      - /app/node_modules
-      - ./server:/app
-    environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - PGUSER=postgres
-      - PGHOST=postgres
-      - PGDATABASE=postgres
-      - PGPASSWORD=password
-      - PGPORT=5432
+version: "3"
+services:
   client:
-    stdin_open: true
-    build:
-      dockerfile: Dockerfile.dev
-      context: ./client
-    volumes:
-      - /app/node_modules
-      - ./client:/app
-  worker:
-    build:
-      dockerfile: Dockerfile.dev
-      context: ./worker
-    volumes:
-      - /app/node_modules
-      - ./worker:/app
+    image: "chervinvananaz/multi-client"
+    hostname: client
+  server:
+    image: "chervinvananaz/multi-server"
+    hostname: api
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - REDIS_HOST=$REDIS_HOST
+      - REDIS_PORT=$REDIS_PORT
+      - PGUSER=$PGUSER
+      - PGHOST=$PGHOST
+      - PGDATABASE=$PGDATABASE
+      - PGPASSWORD=$PGPASSWORD
+      - PGPORT=$PGPORT
+  worker:
+    image: "chervinvananaz/multi-worker"
+    hostname: worker
+    environment:
+      - REDIS_HOST=$REDIS_HOST
+      - REDIS_PORT=$REDIS_PORT
+  nginx:
+    image: "chervinvananaz/multi-nginx"
+    hostname: nginx
+    ports:
+      - "80:80"
+# {
+#   "AWSEBDockerrunVersion": 2,
+#   "containerDefinitions": [
+#     {
+#       "name": "client",
+#       "image": "chervinvananaz/multi-client",
+#       "hostname": "client",
+#       "essential": false
+#     },
+#     {
+#       "name": "server",
+#       "image": "chervinvananaz/multi-server",
+#       "hostname": "api",
+#       "essential": false
+#     },
+#     {
+#       "name": "worker",
+#       "image": "chervinvananaz/multi-worker",
+#       "hostname": "worker",
+#       "essential": false
+#     },
+#     {
+#       "name": "nginx",
+#       "image": "chervinvananaz/multi-nginx",
+#       "hostname": "nginx",
+#       "essential": true,
+#       "portMappings": [
+#         {
+#           "hostPort": 80,
+#           "containerPort": 80
+#         }
+#       ],
+#       "links": ["client", "server"]
+#     }
+#   ]
+# }
